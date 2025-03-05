@@ -131,7 +131,7 @@ include 'dbcon.php'; // Database connection
 
         try {
             // Load your existing PDF from the server
-            const url = 'assets/pdf/BIR FORM 2307.pdf';
+            const url = 'BIR FORM 2307.pdf';
             const existingPdfBytes = await fetch(url).then(res => {
                 if (!res.ok) {
                     throw new Error('Network response was not ok');
