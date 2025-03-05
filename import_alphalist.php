@@ -28,8 +28,11 @@ if (isset($_POST['submit'])) {
             // if (empty($seq_no) && empty($taxpayer_id) && empty($registered_name) && empty($name_of_payees) && empty($atc_code) && empty($amount_of_income_payment) && empty($rate_of_tax) && empty($amount_of_tax_withheld)) {
             //     break;
             // }
-            if (empty($seq_no) || empty($taxpayer_id) || empty($registered_name) || empty($name_of_payees) || empty($atc_code) || empty($amount_of_income_payment) || empty($rate_of_tax) || empty($amount_of_tax_withheld)) {
-                continue; // Skip empty rows
+            // if (empty($seq_no) || empty($taxpayer_id) || empty($registered_name) || empty($name_of_payees) || empty($atc_code) || empty($amount_of_income_payment) || empty($rate_of_tax) || empty($amount_of_tax_withheld)) {
+            //     continue; // Skip empty rows
+            // }
+            if (empty($seq_no) && empty($taxpayer_id) && empty($registered_name) && empty($name_of_payees) && empty($atc_code) && empty($amount_of_income_payment) && empty($rate_of_tax) && empty($amount_of_tax_withheld)) {
+                continue; // Stop if all cells are empty
             }
             
 

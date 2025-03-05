@@ -17,16 +17,16 @@ include 'dbcon.php'; // Database connection
     </form>
 
     <h2>Imported Data</h2>
-    <table border="1">
+    <table border="1" style="border-collapse: collapse;">
         <tr>
-            <th>seq no</th>
-            <th>taxpayer_id</th>
-            <th>registered_nam</th>
-            <th>name_of_payees</th>
-            <th>atc_code</th>
-            <th>amount_of_income_payment</th>
-            <th>rate_of_tax</th>
-            <th>amount_of_tax_withheld</th>
+            <th>SEQ NO</th>
+            <th>TAXPAYER IDENTIFICATION NUMBER</th>
+            <th>REGISTERED NAME</th>
+            <th>NAME OF PAYEES<br>(Last Name, First Name, Middle Name)</th>
+            <th>ATC CODE</th>
+            <th>AMOUNT OF INCOME PAYMENT</th>
+            <th>RATE OF TAX</th>
+            <th>AMOUNT OF TAX WITHHELD</th>
         </tr>
         <?php
         $sql = "SELECT * FROM alphalist_of_payees";
