@@ -12,8 +12,8 @@ include 'dbcon.php'; // Database connection
 <body>
     <h2>Upload Excel File</h2>
     <form action="import_alphalist.php" method="post" enctype="multipart/form-data">
-        <input type="file" name="excel_file" required>
-        <button type="submit" name="submit">Upload</button>
+        <input type="file" name="file" required>
+        <button type="submit" name="import">Upload</button>
     </form>
 
     <h2>Imported Data</h2>

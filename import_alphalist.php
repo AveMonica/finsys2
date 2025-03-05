@@ -1,61 +1,59 @@
 <?php
-require 'vendor/autoload.php'; // PhpSpreadsheet library
-include 'dbcon.php'; // Database connection
+session_start();
+include 'dbcon.php';
+require 'vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 
-if (isset($_POST['submit'])) {
-    $file = $_FILES['excel_file']['tmp_name'];
+if (isset($_POST['import'])) {
+    $file = $_FILES['file']['tmp_name'];
 
-    if (!empty($file)) {
-        $spreadsheet = IOFactory::load($file);
-        $sheet = $spreadsheet->getActiveSheet();
-        $highestRow = $sheet->getHighestRow(); // Get last row number
+    if ($file) {
+        error_log("File uploaded successfully: " . $file);
 
-        for ($row = 15; $row <= $highestRow; $row++) { // Start at row 15
-           
+        $reader = IOFactory::createReader('Xlsx');
+        $reader->setReadDataOnly(true);
+        $spreadsheet = $reader->load($file);
 
-            $seq_no = trim($sheet->getCell("A$row")->getValue());
-            $taxpayer_id = trim($sheet->getCell("B$row")->getValue());
-            $registered_name = trim($sheet->getCell("C$row")->getValue());
-            $name_of_payees = trim($sheet->getCell("D$row")->getValue());
-            $atc_code = trim($sheet->getCell("E$row")->getValue());
-            $amount_of_income_payment = trim($sheet->getCell("F$row")->getValue());
-            $rate_of_tax = trim($sheet->getCell("G$row")->getValue());
-            $amount_of_tax_withheld = trim($sheet->getCell("H$row")->getValue());
+        $worksheet = $spreadsheet->getSheet(0);
+        $rows = $worksheet->toArray(null, true, true, true);
 
-            // Stop if the row is empty
-            // if (empty($seq_no) && empty($taxpayer_id) && empty($registered_name) && empty($name_of_payees) && empty($atc_code) && empty($amount_of_income_payment) && empty($rate_of_tax) && empty($amount_of_tax_withheld)) {
-            //     break;
-            // }
-            // if (empty($seq_no) || empty($taxpayer_id) || empty($registered_name) || empty($name_of_payees) || empty($atc_code) || empty($amount_of_income_payment) || empty($rate_of_tax) || empty($amount_of_tax_withheld)) {
-            //     continue; // Skip empty rows
-            // }
-            if (empty($seq_no) && empty($taxpayer_id) && empty($registered_name) && empty($name_of_payees) && empty($atc_code) && empty($amount_of_income_payment) && empty($rate_of_tax) && empty($amount_of_tax_withheld)) {
-                continue; // Stop if all cells are empty
+        error_log("Number of rows read: " . count($rows));
+
+        $rows = array_slice($rows, 14); 
+
+        // Prepare SQL statement
+        $stmt = $conn->prepare("INSERT INTO alphalist_of_payees (seq_no, taxpayer_id, registered_name, name_of_payees, atc_code, amount_of_income_payment, rate_of_tax, amount_of_tax_withheld) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+
+        foreach ($rows as $row) {
+            if (empty($row['A']) || empty($row['B']) || empty($row['C'])) {
+                error_log("Skipping empty row");
+                continue; // Skip empty rows
             }
-            
 
-            // Sanitize inputs to prevent SQL injection
-            $seq_no = $conn->real_escape_string($seq_no);
-            $taxpayer_id = $conn->real_escape_string($taxpayer_id);
-            $registered_name = $conn->real_escape_string($registered_name);
-            $name_of_payees = $conn->real_escape_string($name_of_payees);
-            $atc_code = $conn->real_escape_string($atc_code);
-            $amount_of_income_payment = $conn->real_escape_string($amount_of_income_payment);
-            $rate_of_tax = $conn->real_escape_string($rate_of_tax);
-            $amount_of_tax_withheld = $conn->real_escape_string($amount_of_tax_withheld);
-
-            // Insert into database
-            $sql = "INSERT INTO alphalist_of_payees (seq_no, taxpayer_id, registered_name, name_of_payees, atc_code, amount_of_income_payment, rate_of_tax, amount_of_tax_withheld) 
-                    VALUES ('$seq_no', '$taxpayer_id', '$registered_name', '$name_of_payees', '$atc_code', '$amount_of_income_payment', '$rate_of_tax', '$amount_of_tax_withheld')";
-
-            $conn->query($sql);
+            $stmt->execute([
+                trim($row['A']),
+                trim($row['B']),
+                trim($row['C']),
+                trim($row['D']),
+                trim($row['E']),
+                trim($row['F']),
+                trim($row['G']),
+                trim($row['H'])
+            ]);
         }
 
-        echo "Data imported successfully!";
+        $_SESSION['message'] = "<p style='color:green;'>File imported successfully!</p>";
+        header("Location: sample.php");
+        exit();
     } else {
-        echo "No file selected!";
+        error_log("File upload failed.");
     }
 }
+
+$_SESSION['message'] = "<p style='color:red;'>Error uploading file.</p>";
+header("Location: sample.php");
+exit();
 ?>
