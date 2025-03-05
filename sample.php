@@ -9,9 +9,11 @@ include 'dbcon.php'; // Database connection
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Import Excel File</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="assets/bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 </head>
 <body>
     <h2>Upload Excel File</h2>
@@ -54,7 +56,7 @@ include 'dbcon.php'; // Database connection
         ?>
     </table>
 
-    ...
+
 <!-- Modal -->
 <div class="modal fade" id="exportModal" tabindex="-1" role="dialog" aria-labelledby="exportModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -106,7 +108,7 @@ include 'dbcon.php'; // Database connection
     </div>
 </div>
 
-...
+
 <script>
     $('#exportModal').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget);
@@ -122,14 +124,86 @@ include 'dbcon.php'; // Database connection
         modal.find('.modal-body #amount_of_tax_withheld').val(row.amount_of_tax_withheld);
     });
 
-    $('#exportForm').on('submit', function (event) {
-        // Remove event.preventDefault() to allow form submission
-        // event.preventDefault();
-        // Add your export logic here
-        alert('Data exported successfully!');
-        $('#exportModal').modal('hide');
+    $('#exportForm').on('submit', async function (event) {
+        event.preventDefault();
+
+        const { PDFDocument, rgb } = PDFLib;
+
+        try {
+            // Load your existing PDF from the server
+            const url = 'assets/pdf/BIR FORM 2307.pdf';
+            const existingPdfBytes = await fetch(url).then(res => {
+                if (!res.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return res.arrayBuffer();
+            });
+
+            // Load a PDFDocument from the existing PDF bytes
+            const pdfDoc = await PDFDocument.load(existingPdfBytes);
+
+            // Get the form so we can fill it
+            const form = pdfDoc.getForm();
+
+            // Get form values
+            // const seqNo = $('#seq_no').val();
+            const taxpayerId = $('#taxpayer_id').val();
+            // const registeredName = $('#registered_name').val();
+            const nameOfPayees = $('#name_of_payees').val();
+            // const atcCode = $('#atc_code').val();
+            // const amountOfIncomePayment = $('#amount_of_income_payment').val();
+            // const rateOfTax = $('#rate_of_tax').val();
+            // const amountOfTaxWithheld = $('#amount_of_tax_withheld').val();
+
+            // Split taxpayer_id into four parts
+            const taxpayerIdParts = taxpayerId.split('-');
+            const payerTin1 = taxpayerIdParts[0];
+            const payerTin2 = taxpayerIdParts[1];
+            const payerTin3 = taxpayerIdParts[2];
+            const payerTin4 = taxpayerIdParts[3];
+
+            // Debugging: Log the field properties
+            const payerTin4Field = form.getTextField('payer_tin4');
+            console.log('payer_tin4 field maxLength:', payerTin4Field.maxLength);
+            console.log('payer_tin4 value length:', payerTin4.length);
+
+            // Attempt to set the maximum length explicitly
+            payerTin4Field.maxLength = 4;
+
+            // Ensure each part fits within the field constraints
+            if (payerTin1.length > 3 || payerTin2.length > 3 || payerTin3.length > 3 || payerTin4.length > 4) {
+                throw new Error('Taxpayer ID parts exceed field length constraints.');
+            }
+
+            // Fill the form fields
+            // form.getTextField('seq_no').setText(seqNo);
+            form.getTextField('payer_tin1').setText(payerTin1);
+            form.getTextField('payer_tin2').setText(payerTin2);
+            form.getTextField('payer_tin3').setText(payerTin3);
+            form.getTextField('payer_tin4').setText(payerTin4);
+            // form.getTextField('registered_name').setText(registeredName);
+            form.getTextField('name_of_payees').setText(nameOfPayees);
+            // form.getTextField('atc_code').setText(atcCode);
+            // form.getTextField('amount_of_income_payment').setText(amountOfIncomePayment);
+            // form.getTextField('rate_of_tax').setText(rateOfTax);
+            // form.getTextField('amount_of_tax_withheld').setText(amountOfTaxWithheld);
+
+            // Serialize the PDFDocument to bytes (a Uint8Array)
+            const pdfBytes = await pdfDoc.save();
+
+            // Trigger the browser to download the PDF document
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'exported_data.pdf';
+            link.click();
+
+            $('#exportModal').modal('hide');
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            alert('Failed to generate PDF. Please check the file path and try again.');
+        }
     });
 </script>
-...
 </body>
 </html>
