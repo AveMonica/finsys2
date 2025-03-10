@@ -20,19 +20,23 @@ if (isset($_POST['import'])) {
         $rows = $worksheet->toArray(null, true, true, true);
 
         error_log("Number of rows read: " . count($rows));
-
+        
         $rows = array_slice($rows, 14); 
-
+        
         // Prepare SQL statement
-        $stmt = $conn->prepare("INSERT INTO alphalist_of_payees (seq_no, taxpayer_id, registered_name, name_of_payees, atc_code, amount_of_income_payment, rate_of_tax, amount_of_tax_withheld) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-
+        $stmt = $conn->prepare("INSERT INTO alphalist_of_payees (seq_no, taxpayer_id, registered_name, name_of_payees, atc_code, amount_of_income_payment, rate_of_tax, amount_of_tax_withheld, payees_address, payees_zipcode ) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        
         foreach ($rows as $row) {
             if (empty($row['A']) || empty($row['B']) || empty($row['C'])) {
                 error_log("Skipping empty row");
                 continue; // Skip empty rows
             }
-
+        
+            $address = trim($row['I']);
+            $zipcode = substr($address, -4);
+            $address = substr($address, 0, -4);
+        
             $stmt->execute([
                 trim($row['A']),
                 trim($row['B']),
@@ -41,7 +45,9 @@ if (isset($_POST['import'])) {
                 trim($row['E']),
                 trim($row['F']),
                 trim($row['G']),
-                trim($row['H'])
+                trim($row['H']),
+                $address,
+                $zipcode
             ]);
         }
 
