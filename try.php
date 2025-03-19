@@ -9,20 +9,13 @@ while ($payorRow = $payorResult->fetch_assoc()) {
     $payorOptions[] = $payorRow;
 }
 
-// Fetch ATC codes from the atc table
-// $atcQuery = "SELECT atc_code FROM atc";
-// $atcResult = $conn->query($atcQuery);
-// $atcOptions = [];
-// while ($atcRow = $atcResult->fetch_assoc()) {
-//     $atcOptions[] = $atcRow['atc_code'];
-// }
-
 $atcQuery = "SELECT atc_code, atc_description FROM atc";
 $atcResult = $conn->query($atcQuery);
 $atcOptions = [];
 while ($atcRow = $atcResult->fetch_assoc()) {
     $atcOptions[] = $atcRow;
 }
+
 ?>
 
 <script>
@@ -66,12 +59,16 @@ while ($atcRow = $atcResult->fetch_assoc()) {
                 <th>RATE OF TAX</th>
                 <th>AMOUNT OF TAX WITHHELD</th>
                 <th>VAT OR NON VAT</th>
+                
                 <th>ACTIONS</th>
             </tr>
         </thead>
         <tbody>
         <?php
-        $sql = "SELECT * FROM alphalist_of_payees";
+        // $sql = "SELECT * FROM alphalist_of_payees";
+        $sql = "SELECT a.seq_no, a.taxpayer_id, a.registered_name, a.name_of_payees, a.payees_address, a.payees_zipcode, a.atc_code, a.amount_of_income_payment, a.rate_of_tax, a.amount_of_tax_withheld, a.vat_nonvat, v.vat_nonvat_description
+FROM alphalist_of_payees a
+JOIN vat_nonvat_table v ON a.vat_nonvat = v.vat_nonvat;";
         $result = $conn->query($sql);
         while ($row = $result->fetch_assoc()) {
             $amount_of_income_payment = number_format($row['amount_of_income_payment'], 2);
@@ -88,6 +85,7 @@ while ($atcRow = $atcResult->fetch_assoc()) {
                     <td>{$row['rate_of_tax']}</td>
                     <td>{$amount_of_tax_withheld}</td>
                     <td>{$row['vat_nonvat']}</td>
+               
                     <td><button class='btn btn-primary' data-toggle='modal' data-target='#exportModal' data-row='".json_encode($row)."'>Export</button></td>
                 </tr>";
         }
@@ -192,6 +190,10 @@ while ($atcRow = $atcResult->fetch_assoc()) {
                         <label for="payor_zipcode">VAT OR NON VAT</label>
                         <input type="text" class="form-control" id="vat_nonvat" name="vat_nonvat" readonly>
                     </div>
+                    <div class="form-group" style="display: none;">
+                        <label for="payor_zipcode">VAT OR NON VAT desc</label>
+                        <input type="text" class="form-control" id="vat_nonvat_description" name="vat_nonvat_description" readonly>
+                    </div>
                     <div class="form-group">
                     <h1>*COMPUTATION*</h1>
                     </div>
@@ -254,6 +256,7 @@ while ($atcRow = $atcResult->fetch_assoc()) {
         modal.find('.modal-body #rate_of_tax').val(row.rate_of_tax);
         modal.find('.modal-body #amount_of_tax_withheld').val(row.amount_of_tax_withheld);
         modal.find('.modal-body #vat_nonvat').val(row.vat_nonvat);
+        modal.find('.modal-body #vat_nonvat_description').val(row.vat_nonvat_description);
         // Check ATC code and set radio buttons accordingly
         if (row.atc_code.startsWith('WI')) {
             $('#is_corporation_no').prop('checked', true);
@@ -299,6 +302,7 @@ while ($atcRow = $atcResult->fetch_assoc()) {
 
         console.log("Period From: " + periodFrom + " | Period To: " + periodTo);
     });
+
 
 $('#exportForm').on('submit', async function (event) {
     event.preventDefault();
@@ -374,6 +378,7 @@ $('#exportForm').on('submit', async function (event) {
         // Calculate the total based on the ATC code and base amount
         const atcCode = $('#atc_code').val();
         const baseAmount = parseFloat($('#base_amount').val());
+        const vatNonVatPdf = $('#vat_nonvat').val()
         const vatNonvat = $('#vat_nonvat').val().substring(0, 2);
         console.log(baseAmount);
         console.log(atcCode);
@@ -387,7 +392,6 @@ $('#exportForm').on('submit', async function (event) {
         } else {
             console.log('ATC Description not found');
         }
-        
 
         let total = 0;
         let net_of_pay = 0;
@@ -443,6 +447,11 @@ $('#exportForm').on('submit', async function (event) {
             form.getTextField('MPS_total1').setText(baseAmount.toFixed(2));
             form.getTextField('MPS_tax1').setText(total.toFixed(2));
         }
+        const vatNonVatDesc = $('#vat_nonvat_description').val();
+        // Fill in the MPS1 and MPS_ATC1 fields
+        form.getTextField('MPS1').setText(vatNonVatDesc);
+        form.getTextField('MPS_ATC1').setText(vatNonVatPdf);
+        
 
         const pdfBytes = await pdfDoc.save();
         const blob = new Blob([pdfBytes], { type: 'application/pdf' });

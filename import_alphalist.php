@@ -1,5 +1,6 @@
 <?php
 session_start();
+set_time_limit(300);
 include 'dbcon.php';
 require 'vendor/autoload.php';
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -29,6 +30,9 @@ if (isset($_POST['import'])) {
         // Check if atc_code exists in the atc table
         $atc_stmt = $conn->prepare("SELECT COUNT(*) FROM atc WHERE atc_code = ?");
 
+        // Check if vat_nonvat exists in the vat_nonvat_table
+        $vat_stmt = $conn->prepare("SELECT COUNT(*) FROM vat_nonvat_table WHERE vat_nonvat = ?");
+
         foreach ($rows as $row) {
             if (empty($row['A']) || empty($row['B']) || empty($row['C'])) {
                 error_log("Skipping empty row");
@@ -48,6 +52,19 @@ if (isset($_POST['import'])) {
                 continue; // Skip row if ATC code doesn't exist
             }
 
+            // Check if vat_nonvat exists in the vat_nonvat_table
+            $vat_nonvat = trim($row['J']);
+            $vat_stmt->bind_param("s", $vat_nonvat); // Bind vat_nonvat as string
+            $vat_stmt->execute();
+            $result = $vat_stmt->get_result();
+            $vat_exists = $result->fetch_row()[0] > 0; // Use fetch_row() to get the result
+
+            if (!$vat_exists) {
+                // If the vat_nonvat doesn't exist in the vat_nonvat_table, you can choose to skip or log an error
+                error_log("VAT/Non-VAT code {$vat_nonvat} not found in vat_nonvat_table, skipping row.");
+                continue; // Skip row if VAT/Non-VAT code doesn't exist
+            }
+
             $address = trim($row['I']);
             $zipcode = substr($address, -4);
             $address = substr($address, 0, -4);
@@ -64,7 +81,7 @@ if (isset($_POST['import'])) {
                 trim($row['H']),
                 $address,
                 $zipcode,
-                trim($row['J']),
+                $vat_nonvat, // Ensure this is the valid vat_nonvat
             ]);
         }
 
