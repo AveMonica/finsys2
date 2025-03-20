@@ -9,13 +9,6 @@ while ($payorRow = $payorResult->fetch_assoc()) {
     $payorOptions[] = $payorRow;
 }
 
-// Fetch ATC codes from the atc table
-// $atcQuery = "SELECT atc_code FROM atc";
-// $atcResult = $conn->query($atcQuery);
-// $atcOptions = [];
-// while ($atcRow = $atcResult->fetch_assoc()) {
-//     $atcOptions[] = $atcRow['atc_code'];
-// }
 
 $atcQuery = "SELECT atc_code, atc_description FROM atc";
 $atcResult = $conn->query($atcQuery);
@@ -24,6 +17,8 @@ while ($atcRow = $atcResult->fetch_assoc()) {
     $atcOptions[] = $atcRow;
 }
 ?>
+
+
 
 <script>
     const atcOptions = <?php echo json_encode($atcOptions); ?>;
@@ -71,7 +66,10 @@ while ($atcRow = $atcResult->fetch_assoc()) {
         </thead>
         <tbody>
         <?php
-        $sql = "SELECT * FROM alphalist_of_payees";
+         // $sql = "SELECT * FROM alphalist_of_payees";
+         $sql = "SELECT a.seq_no, a.taxpayer_id, a.registered_name, a.name_of_payees, a.payees_address, a.payees_zipcode, a.atc_code, a.amount_of_income_payment, a.rate_of_tax, a.amount_of_tax_withheld, a.vat_nonvat, v.vat_nonvat_description
+         FROM alphalist_of_payees a
+         JOIN vat_nonvat_table v ON a.vat_nonvat = v.vat_nonvat;";
         $result = $conn->query($sql);
         while ($row = $result->fetch_assoc()) {
             $amount_of_income_payment = number_format($row['amount_of_income_payment'], 2);
@@ -116,6 +114,14 @@ while ($atcRow = $atcResult->fetch_assoc()) {
                             <option value="Q4">Fourth Quarter</option>
                         </select>
                     </div>
+
+                    <div class="form-group">
+                <label for="month_from">Month From</label>
+    <select class="form-control" id="month_from" name="month_from" required>
+        <option value="">Select a month</option>
+    </select>
+</div>
+
                     <div class="form-group">
                       <h1>PAYER</h1>
                     </div>
@@ -143,10 +149,6 @@ while ($atcRow = $atcResult->fetch_assoc()) {
                         <label for="payees_zipcode">ZIPCODE</label>
                         <input type="text" class="form-control" id="payees_zipcode" name="payees_zipcode">
                     </div>
-                    <!-- <div class="form-group">
-                        <label for="atc_code">ATC CODE</label>
-                        <input type="text" class="form-control" id="atc_code" name="atc_code">
-                    </div> -->
                     <div class="form-group">
                         <label for="amount_of_income_payment">AMOUNT OF INCOME PAYMENT</label>
                         <input type="text" class="form-control" id="amount_of_income_payment" name="amount_of_income_payment">
@@ -192,6 +194,10 @@ while ($atcRow = $atcResult->fetch_assoc()) {
                         <label for="payor_zipcode">VAT OR NON VAT</label>
                         <input type="text" class="form-control" id="vat_nonvat" name="vat_nonvat" readonly>
                     </div>
+                    <div class="form-group" style="display: none;">
+                        <label for="payor_zipcode">VAT OR NON VAT desc</label>
+                        <input type="text" class="form-control" id="vat_nonvat_description" name="vat_nonvat_description" readonly>
+                    </div>
                     <div class="form-group">
                     <h1>*COMPUTATION*</h1>
                     </div>
@@ -199,8 +205,7 @@ while ($atcRow = $atcResult->fetch_assoc()) {
                         <label for="payor_address">Gross Amount or Base Amount</label>
                         <input type="number" class="form-control" id="base_amount" name="base_amount">
                     </div>
-                    <!-- atc -->
-                    <!-- atc -->
+
 <div class="form-group">
     <label for="atc_code">ATC Code</label>
     <select class="form-control" id="atc_code" name="atc_code">
@@ -254,6 +259,7 @@ while ($atcRow = $atcResult->fetch_assoc()) {
         modal.find('.modal-body #rate_of_tax').val(row.rate_of_tax);
         modal.find('.modal-body #amount_of_tax_withheld').val(row.amount_of_tax_withheld);
         modal.find('.modal-body #vat_nonvat').val(row.vat_nonvat);
+        modal.find('.modal-body #vat_nonvat_description').val(row.vat_nonvat_description);
         // Check ATC code and set radio buttons accordingly
         if (row.atc_code.startsWith('WI')) {
             $('#is_corporation_no').prop('checked', true);
@@ -267,6 +273,41 @@ while ($atcRow = $atcResult->fetch_assoc()) {
             $('#is_corporation_yes').prop('disabled', false);
             $('#is_corporation_no').prop('disabled', false);
         }
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const periodDropdown = document.getElementById("period_from");
+        const monthDropdown = document.getElementById("month_from");
+ 
+        // Define months based on the quarter
+        const quarterMonths = {
+            "Q1": ["January", "February", "March"],
+            "Q2": ["April", "May", "June"],
+            "Q3": ["July", "August", "September"],
+            "Q4": ["October", "November", "December"]
+        };
+
+        periodDropdown.addEventListener("change", function () {
+            const selectedQuarter = this.value;
+            monthDropdown.innerHTML = '<option value="">Select a month</option>'; // Reset options
+
+            if (quarterMonths[selectedQuarter]) {
+                quarterMonths[selectedQuarter].forEach(month => {
+                    const option = document.createElement("option");
+                    option.value = month;
+                    option.textContent = month;
+                    monthDropdown.appendChild(option);
+                });
+            }
+
+
+            monthDropdown.addEventListener("change", function () {
+        selectedMonth = this.value; // Store selected month
+        console.log("Selected Month: ", selectedMonth);
+
+
+});
+        });
     });
 
     $('#period_from').on('change', function() {
@@ -306,7 +347,17 @@ $('#exportForm').on('submit', async function (event) {
     const { PDFDocument, rgb } = PDFLib;
 
     try {
-        const url = 'assets/pdf/BIR FORM 2307.pdf';
+
+        const ATC_CODE = $('#atc_code').val();
+        const VAT_NONVAT = $('#vat_nonvat').val();
+
+        let url;
+        if ((ATC_CODE === 'WI120' || ATC_CODE === 'WC120') && VAT_NONVAT === 'WV030') {
+            url = 'assets/pdf/LONG.pdf';
+        } else {
+            url = 'assets/pdf/A4.pdf';
+        }
+
         const existingPdfBytes = await fetch(url).then(res => {
             if (!res.ok) {
                 throw new Error('Network response was not ok');
@@ -374,6 +425,7 @@ $('#exportForm').on('submit', async function (event) {
         // Calculate the total based on the ATC code and base amount
         const atcCode = $('#atc_code').val();
         const baseAmount = parseFloat($('#base_amount').val());
+        const vatNonVatPdf = $('#vat_nonvat').val()
         const vatNonvat = $('#vat_nonvat').val().substring(0, 2);
         console.log(baseAmount);
         console.log(atcCode);
@@ -387,63 +439,176 @@ $('#exportForm').on('submit', async function (event) {
         } else {
             console.log('ATC Description not found');
         }
-        
 
+        const vatNonVatDesc = $('#vat_nonvat_description').val();
+        // Fill in the MPS1 and MPS_ATC1 fields
+        form.getTextField('MPS1').setText(vatNonVatDesc);
+        form.getTextField('MPS_ATC1').setText(vatNonVatPdf);
+        
         let total = 0;
         let net_of_pay = 0;
+        let field;
+        let field2;
+        let totalMonthfield;
+        let totalTotalField;
+        let totalTaxField;
 
-        if (vatNonvat === 'WV') {
+
+        function getComputationUpper(fieldName, totalMonthName, totalTotalName, totalTaxName) {
+    if (vatNonvat === 'WV') {
             if (['WC120', 'WI120', 'WC157', 'WI157'].includes(atcCode)) {
                 net_of_pay = (baseAmount / 1.12);
                 console.log(net_of_pay);
                 total = net_of_pay * 0.02;
                 console.log(total);
 
+                form.getTextField(fieldName).setText(net_of_pay.toFixed(2));
                 form.getTextField('total1').setText(net_of_pay.toFixed(2));
                 form.getTextField('tax1').setText(total.toFixed(2));
+                form.getTextField(totalMonthName).setText(net_of_pay.toFixed(2));
+                form.getTextField(totalTotalName).setText(net_of_pay.toFixed(2));
+                form.getTextField(totalTaxName).setText(total.toFixed(2));
             } else if (['WC640', 'WI640'].includes(atcCode)) {
                 net_of_pay = (baseAmount / 1.12);
                 total = net_of_pay * 0.01;
 
+                form.getTextField(fieldName).setText(net_of_pay.toFixed(2));
                 form.getTextField('total1').setText(net_of_pay.toFixed(2));
                 form.getTextField('tax1').setText(total.toFixed(2));
+                form.getTextField(totalMonthName).setText(net_of_pay.toFixed(2));
+                form.getTextField(totalTotalName).setText(net_of_pay.toFixed(2));
+                form.getTextField(totalTaxName).setText(total.toFixed(2));
             } else if (atcCode === 'WI010') {
                 net_of_pay = (baseAmount / 1.12);
                 total = net_of_pay * 0.05;
 
+                form.getTextField(fieldName).setText(net_of_pay.toFixed(2));
                 form.getTextField('total1').setText(net_of_pay.toFixed(2));
                 form.getTextField('tax1').setText(total.toFixed(2));
+                form.getTextField(totalMonthName).setText(net_of_pay.toFixed(2));
+                form.getTextField(totalTotalName).setText(net_of_pay.toFixed(2));
+                form.getTextField(totalTaxName).setText(total.toFixed(2));
             } else if (atcCode === 'WIO11') {
                 net_of_pay = (baseAmount / 1.12);
                 total = net_of_pay * .10;
 
+                form.getTextField(fieldName).setText(net_of_pay.toFixed(2));
                 form.getTextField('total1').setText(net_of_pay.toFixed(2));
                 form.getTextField('tax1').setText(total.toFixed(2));
+                form.getTextField(totalMonthName).setText(net_of_pay.toFixed(2));
+                form.getTextField(totalTotalName).setText(net_of_pay.toFixed(2));
+                form.getTextField(totalTaxName).setText(total.toFixed(2));
             }
         } else if (vatNonvat === 'WB') {
             if (['WC120', 'WI120', 'WC157', 'WI157'].includes(atcCode)) {
                 total = baseAmount * 0.02;
+
+
+                form.getTextField(fieldName2).setText(baseAmount.toFixed(2));
+                form.getTextField('total1').setText(baseAmount.toFixed(2));
+                form.getTextField('tax1').setText(total.toFixed(2));
+                form.getTextField(totalMonthName).setText(net_of_pay.toFixed(2));
+                form.getTextField(totalTotalName).setText(net_of_pay.toFixed(2));
+                form.getTextField(totalTaxName).setText(total.toFixed(2));
             } else if (['WC640', 'WI640'].includes(atcCode)) {
                 total = baseAmount * 0.01;
+
+                form.getTextField(fieldName2).setText(baseAmount.toFixed(2));
+                form.getTextField('total1').setText(baseAmount.toFixed(2));
+                form.getTextField('tax1').setText(total.toFixed(2));
+                form.getTextField(totalMonthName).setText(net_of_pay.toFixed(2));
+                form.getTextField(totalTotalName).setText(net_of_pay.toFixed(2));
+                form.getTextField(totalTaxName).setText(total.toFixed(2));
             } else if (atcCode === 'WI010') {
                 total = baseAmount * 0.05;
+
+                form.getTextField(fieldName2).setText(baseAmount.toFixed(2));
+                form.getTextField('total1').setText(baseAmount.toFixed(2));
+                form.getTextField('tax1').setText(total.toFixed(2));
+                form.getTextField(totalMonthName).setText(net_of_pay.toFixed(2));
+                form.getTextField(totalTotalName).setText(net_of_pay.toFixed(2));
+                form.getTextField(totalTaxName).setText(total.toFixed(2));
             } else if (atcCode === 'WIO11') {
                 total = baseAmount * 0.10;
+
+                form.getTextField(fieldName2).setText(baseAmount.toFixed(2));
+                form.getTextField('total1').setText(baseAmount.toFixed(2));
+                form.getTextField('tax1').setText(total.toFixed(2));
+                form.getTextField(totalMonthName).setText(net_of_pay.toFixed(2));
+                form.getTextField(totalTotalName).setText(net_of_pay.toFixed(2));
+                form.getTextField(totalTaxName).setText(total.toFixed(2));
             }
         }
+        }
+
+        function getComputationLower(fieldName2, totalMPSMonthName, totalMPSTotalName, totalMPSTaxName) {  
 
         if (vatNonvat === 'WV') {
             net_of_pay = (baseAmount / 1.12);
             total = net_of_pay * .05;
 
+            form.getTextField(fieldName2).setText(net_of_pay.toFixed(2));
             form.getTextField('MPS_total1').setText(net_of_pay.toFixed(2));
             form.getTextField('MPS_tax1').setText(total.toFixed(2));
+            form.getTextField(totalMPSMonthName).setText(net_of_pay.toFixed(2));
+                form.getTextField(totalMPSTotalName).setText(net_of_pay.toFixed(2));
+                form.getTextField(totalMPSTaxName).setText(total.toFixed(2));
         } else if (vatNonvat === 'WB') {
             total = baseAmount * 0.03;
+            
+            form.getTextField(fieldName2).setText(baseAmount.toFixed(2));
             form.getTextField('MPS_total1').setText(baseAmount.toFixed(2));
             form.getTextField('MPS_tax1').setText(total.toFixed(2));
+            form.getTextField(totalMPSMonthName).setText(net_of_pay.toFixed(2));
+                form.getTextField(totalMPSTotalName).setText(net_of_pay.toFixed(2));
+                form.getTextField(totalMPSTaxName).setText(total.toFixed(2));
+        }
+}
+
+        if (selectedMonth == "January" || selectedMonth =="April" || selectedMonth == "July" || selectedMonth == "October"){
+          field = 'first_month_1';
+          field2 = 'MPS_first_month_1';
+          totalMonthfield = 'TOTAL_first_month';
+          totalTotalField = "TOTAL_total";
+            totalTaxField = "TOTAL_tax";
+            totalMPSMonthfield = 'MPS_first_month';
+          totalMPSTotalField = "TOTAL_MPS_total";
+            totalMPSTaxField = "MPS_tax";
+
+
+
+            getComputationUpper(field, totalMonthfield, totalTotalField, totalTaxField);
+            getComputationLower(field2, totalMPSMonthfield, totalMPSTotalField, totalMPSTaxField);
+        
+        } else  if (selectedMonth == "February" || selectedMonth =="May" || selectedMonth == "August" || selectedMonth == "November"){
+          field = 'second_month_1';
+          field2 = 'MPS_second_month_1';
+          totalMonthfield = 'TOTAL_second_month';
+          totalTotalField = "TOTAL_total";
+            totalTaxField = "TOTAL_tax";
+            totalMPSMonthfield = 'TOTAL_MPS_second_month';
+          totalMPSTotalField = "TOTAL_MPS_tota";
+            totalMPSTaxField = "MPS_tax";
+
+          getComputationUpper(field, totalMonthfield, totalTotalField, totalTaxField);
+          getComputationLower(field2, totalMPSMonthfield, totalMPSTotalField, totalMPSTaxField);
+        
+        } else  if (selectedMonth == "March" || selectedMonth =="June" || selectedMonth == "September" || selectedMonth == "December"){
+          field = 'third_month_1';
+          field2 = 'MPS_third_month_1';
+          totalMonthfield = 'TOTAL_third_month';
+          totalTotalField = "TOTAL_total";
+            totalTaxField = "TOTAL_tax";
+            totalMPSMonthfield = 'MPS_third_month';
+          totalMPSTotalField = "TOTAL_MPS_total";
+            totalMPSTaxField = "MPS_tax";
+
+          getComputationUpper(field, totalMonthfield, totalTotalField, totalTaxField);
+          getComputationLower(field2, totalMPSMonthfield, totalMPSTotalField, totalMPSTaxField);
+        
         }
 
+        
         const pdfBytes = await pdfDoc.save();
         const blob = new Blob([pdfBytes], { type: 'application/pdf' });
         const link = document.createElement('a');
@@ -458,6 +623,8 @@ $('#exportForm').on('submit', async function (event) {
         alert('Failed to generate PDF. Please check the file path and try again.');
     }
 });
+
+
 </script>
 </body>
 </html>
