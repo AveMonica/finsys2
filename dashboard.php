@@ -56,6 +56,7 @@ $result = mysqli_query($conn, "SELECT * FROM funds ORDER BY fund_id DESC");
             </div>
             <ul class="sidebar-nav">
                 <li><a href="dashboard.php"><i class="bi bi-wallet"></i> Funds</a></li>
+                <li><a href="export_bir_pdf.php"><i class="bi bi-file-earmark-spreadsheet"></i> BIR FORM 2307</a></li>
                 <li><a href="logout.php"><i class="bi bi-box-arrow-left"></i> Logout</a></li>
             </ul>
         </div>
