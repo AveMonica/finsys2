@@ -17,7 +17,8 @@ $sql = "INSERT INTO alphalist_of_payees (seq_no, taxpayer_id, registered_name, n
 VALUES ('$seq_no', '$taxpayer_id', '$registered_name', '$name_of_payees', '$amount_of_income_payment', '$rate_of_tax', '$amount_of_tax_withheld', '$payees_address', '$payees_zipcode', '$atc_code', '$vat_nonvat')";
 
 if ($conn->query($sql) === TRUE) {
-    echo "New record created successfully";
+    // echo "New record created successfully";
+    echo "<script>alert('Record added successfully!'); window.location.href='export_bir_pdf.php';</script>";
 } else {
     echo "Error: " . $sql . "<br>" . $conn->error;
 }

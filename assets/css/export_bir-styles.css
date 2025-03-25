@@ -1,0 +1,197 @@
+:root {
+    --primary-green: #43a047;
+    --light-green: #81c784;
+    --lighter-green: #e8f5e9;
+    --dark-green: #1b5e20;
+    --accent-green: #4caf50;
+}
+
+/* Modern table styling */
+#dataTable {
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100% !important;
+}
+
+#dataTable thead th {
+    background-color: var(--primary-green);
+    color: white;
+    font-weight: 500;
+    border: none;
+    padding: 12px 15px;
+    position: sticky;
+    top: 0;
+}
+
+#dataTable tbody td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e0e0e0;
+    vertical-align: middle;
+}
+
+#dataTable tbody tr {
+    transition: all 0.2s ease;
+    background-color: white;
+}
+
+#dataTable tbody tr:hover {
+    background-color: var(--lighter-green);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+#dataTable tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#dataTable tbody tr:nth-child(even):hover {
+    background-color: var(--lighter-green);
+}
+
+/* Button styling */
+.btn-primary {
+    background-color: var(--accent-green);
+    border-color: var(--accent-green);
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+.btn-secondary {
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.text-right .btn-primary, .text-right .btn-secondary{
+    font-size: 16px;
+    padding: 8px 25px;
+}
+
+.btn-primary:hover {
+    background-color: var(--dark-green);
+    border-color: var(--dark-green);
+    transform: translateY(-1px);
+}
+
+/* Top bar styling */
+.top-bar {
+    background-color: var(--primary-green);
+    padding: 10px 15px;
+    border-radius: 6px;
+    /* gap: 10px; */
+}
+.top-bar button, .top-bar input[type="submit"] {
+    background-color: white;
+    color: var(--primary-green);
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.top-bar button:hover, .top-bar input[type="submit"]:hover {
+    background-color: var(--lighter-green);
+    color: var(--dark-green);
+    transform: translateY(-1px);
+}
+
+/* Header styling */
+h2 {
+    color: var(--dark-green);
+    margin-bottom: 20px;
+    font-weight: 600;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background-color: var(--accent-green);
+}
+
+/* Modal header */
+.modal-header {
+    background-color: var(--primary-green);
+    color: white;
+}
+
+/* DataTables pagination styling */
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    color: var(--primary-green) !important;
+    border: 1px solid #ddd !important;
+    margin-left: 0 !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+    background: var(--primary-green) !important;
+    color: white !important;
+    border: 1px solid var(--primary-green) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: var(--lighter-green) !important;
+    border: 1px solid #ddd !important;
+    color: var(--dark-green) !important;
+}
+
+/* Search box styling */
+.dataTables_filter input {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px 10px;
+    margin-bottom: 15px;
+}
+
+.dataTables_filter input:focus {
+    border-color: var(--light-green);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.section-title {
+    font-weight: 600;
+}
+
+
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #dataTable thead {
+        display: none;
+    }
+    
+    #dataTable tbody td {
+        display: block;
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+    }
+    
+    #dataTable tbody td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 15px;
+        width: 45%;
+        padding-right: 10px;
+        font-weight: bold;
+        text-align: left;
+        color: var(--primary-green);
+    }
+    
+    .top-bar {
+        flex-direction: column;
+    }
+}

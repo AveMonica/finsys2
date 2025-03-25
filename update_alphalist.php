@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $conn->close();
 
     // Redirect back to the main page
-    header("Location: sample.php");
+    header("Location: export_bir_pdf.php");
     exit();
 }
 ?>
