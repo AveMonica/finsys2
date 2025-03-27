@@ -229,7 +229,7 @@ $conn->close();
                                 <div class="col-md-6">
                                 <div class="form-group">
                                 <label for="atc_code">ATC Code:</label>
-                                <select class="form-control" id="atc_code" name="atc_code">
+                                <select class="form-control" id="atc_code" name="atc_code" required>
                                     <option value="" disabled selected>Select an ATC Code</option>
                                     <?php foreach($atc_codes as $code): ?>
                                         <option value="<?php echo $code; ?>"><?php echo $code; ?></option>

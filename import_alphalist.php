@@ -86,7 +86,7 @@ if (isset($_POST['import'])) {
         }
 
         $_SESSION['message'] = "<p style='color:green;'>File imported successfully!</p>";
-        header("Location: sample.php");
+        header("Location: export_bir_pdf.php");
         exit();
     } else {
         error_log("File upload failed.");
@@ -94,6 +94,6 @@ if (isset($_POST['import'])) {
 }
 
 $_SESSION['message'] = "<p style='color:red;'>Error uploading file.</p>";
-header("Location: sample.php");
+header("Location: export_bir_pdf.php");
 exit();
 ?>

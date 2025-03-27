@@ -584,6 +584,7 @@ async function generatePDF() {
             form.getTextField('conforme_name').setText(nameOfPayees + " / " + taxpayerId);
         }
 
+        if(payeesZipcode != 0)
         form.getTextField('payer_zipcode').setText(payeesZipcode);
         form.getTextField('payer_reg_address').setText(payeesAddress);
 
@@ -708,7 +709,7 @@ async function generatePDF() {
         }));
         form.getTextField('MPS_total1').setText(netPayLower.toLocaleString('en-US', {
             minimumFractionDigits: 2,
-            maximumFractionDigits: 2
+            maximumFractionDigits: 2,
         }));
         form.getTextField('MPS_tax1').setText(taxLower.toLocaleString('en-US', {
             minimumFractionDigits: 2,
