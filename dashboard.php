@@ -71,9 +71,9 @@ $result = mysqli_query($conn, "SELECT * FROM funds ORDER BY fund_id DESC");
                 </div> -->
                 <div class="user-profile">
                     <!-- Dark/Light Mode Toggle -->
-                    <button id="theme-toggle" class="btn btn-sm btn-outline-secondary">
-                        <i class="bi bi-moon"></i> <!-- Default to dark mode icon -->
-                    </button>
+                    <!-- <button id="theme-toggle" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-moon"></i> 
+                    </button> -->
                 </div>
             </div>
 
@@ -102,7 +102,7 @@ $result = mysqli_query($conn, "SELECT * FROM funds ORDER BY fund_id DESC");
                             </div>
                             <div class="card-content">
                                 <h3><?php echo $row['fund_name']; ?></h3>
-                                <p>Total Records: (display here the total records of each funds)</p>
+                                <!-- <p>Total Records: (display here the total records of each funds)</p> -->
                                 <a href="checks_table.php?fund_id=<?php echo $row['fund_id']; ?>" class="btn btn-outline-primary">View Table</a>
                             </div>
                         </div>
