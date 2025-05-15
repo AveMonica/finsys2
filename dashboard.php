@@ -52,7 +52,7 @@ $result = mysqli_query($conn, "SELECT * FROM funds ORDER BY fund_id DESC");
         <div class="sidebar">
             <div class="sidebar-header">
                 <img src="assets/img/2020-nia-logo.svg" width="45px" alt="Nia Logo 2020">
-                <span>Dashboard</span>
+                <span>FinanceSystem</span>
             </div>
             <ul class="sidebar-nav">
                 <li><a href="dashboard.php"><i class="bi bi-wallet"></i> Funds</a></li>

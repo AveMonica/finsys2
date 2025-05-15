@@ -37,7 +37,7 @@ $result = mysqli_query($conn, "SELECT * FROM checks WHERE fund_id = '$fund_id'")
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            /* margin: 20px; */
         }
 
         .import-form {
@@ -110,13 +110,13 @@ $result = mysqli_query($conn, "SELECT * FROM checks WHERE fund_id = '$fund_id'")
                 </div>
 
                 <!-- Date Range Filter -->
-                <div class="filter-section">
+                <!-- <div class="filter-section">
                     <label>Start Date:</label>
                     <input type="date" id="startDate">
                     <label>End Date:</label>
                     <input type="date" id="endDate">
                     <button onclick="filterByDate()">Filter</button>
-                </div>
+                </div> -->
 
                 <table id="checksTable" class="display">
                     <thead>

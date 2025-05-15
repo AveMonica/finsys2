@@ -60,7 +60,7 @@ while ($row = $result->fetch_assoc()) {
         <div class="sidebar">
             <div class="sidebar-header">
                 <img src="assets/img/2020-nia-logo.svg" width="45px" alt="Nia Logo 2020">
-                <span>FinanceSystem</span>
+                <span>Dashboard</span>
             </div>
             <ul class="sidebar-nav">
                 <li><a href="dashboard.php"><i class="bi bi-wallet"></i> Funds</a></li>
@@ -509,7 +509,8 @@ while ($row = $result->fetch_assoc()) {
         // PDF generation function
         async function generatePDF() {
             const {
-                PDFDocument
+                PDFDocument,
+                rgb
             } = PDFLib;
 
             try {
@@ -530,6 +531,10 @@ while ($row = $result->fetch_assoc()) {
 
                 const pdfDoc = await PDFDocument.load(existingPdfBytes);
                 const form = pdfDoc.getForm();
+
+                // Load your custom font (Times New Roman)
+                const fontBytes = await fetch('assets/fonts/TimesNewRoman.ttf').then(res => res.arrayBuffer());
+                const font = await pdfDoc.embedFont(fontBytes);
 
                 // Collect form data
                 const taxpayerId = $('#taxpayer_id').val();
@@ -555,196 +560,110 @@ while ($row = $result->fetch_assoc()) {
                 const periodFrom = $('#period_from_hidden').val();
                 const periodTo = $('#period_to_hidden').val();
 
-                // Fill payer fields
-                form.getTextField('payer_tin1').setText(taxpayerIdParts[0] || '');
-                form.getTextField('payer_tin2').setText(taxpayerIdParts[1] || '');
-                form.getTextField('payer_tin3').setText(taxpayerIdParts[2] || '');
-                form.getTextField('payer_tin4').setText(taxpayerIdParts[3] || '');
+                // Fill payer fields and set font to Times New Roman
+                form.getTextField('payer_tin1').setText(taxpayerIdParts[0] || '').setFont(font);
+                form.getTextField('payer_tin2').setText(taxpayerIdParts[1] || '').setFont(font);
+                form.getTextField('payer_tin3').setText(taxpayerIdParts[2] || '').setFont(font);
+                form.getTextField('payer_tin4').setText(taxpayerIdParts[3] || '').setFont(font);
 
                 // Fill payor fields
-                form.getTextField('payor_tin1').setText(payorIDParts[0] || '');
-                form.getTextField('payor_tin2').setText(payorIDParts[1] || '');
-                form.getTextField('payor_tin3').setText(payorIDParts[2] || '');
-                form.getTextField('payor_tin4').setText(payorIDParts[3] || '');
-                form.getTextField('payor_name').setText(payorName);
-                form.getTextField('payor_zipcode').setText(payorZipcode);
-                form.getTextField('payor_reg_address').setText(payorAddress);
-                form.getTextField('ATC1').setText(atcCode);
+                form.getTextField('payor_tin1').setText(payorIDParts[0] || '').setFont(font);
+                form.getTextField('payor_tin2').setText(payorIDParts[1] || '').setFont(font);
+                form.getTextField('payor_tin3').setText(payorIDParts[2] || '').setFont(font);
+                form.getTextField('payor_tin4').setText(payorIDParts[3] || '').setFont(font);
+                form.getTextField('payor_name').setText(payorName).setFont(font);
+                form.getTextField('payor_zipcode').setText(payorZipcode).setFont(font);
+                form.getTextField('payor_reg_address').setText(payorAddress).setFont(font);
+                form.getTextField('ATC1').setText(atcCode).setFont(font);
 
                 // Fill period fields
-                form.getTextField('period_from').setText(periodFrom);
-                form.getTextField('period_to').setText(periodTo);
+                form.getTextField('period_from').setText(periodFrom).setFont(font);
+                form.getTextField('period_to').setText(periodTo).setFont(font);
 
                 // Fill payee information
                 if (isCorporation) {
-                    form.getTextField('payees_name').setText(registeredName);
-                    form.getTextField('conforme_name').setText(registeredName + " / " + taxpayerId);
+                    form.getTextField('payees_name').setText(registeredName).setFont(font);
+                    form.getTextField('conforme_name').setText(registeredName + " / " + taxpayerId).setFont(font);
                 } else {
-                    form.getTextField('payees_name').setText(registeredName);
-                    form.getTextField('conforme_name').setText(nameOfPayees + " / " + taxpayerId);
+                    form.getTextField('payees_name').setText(registeredName).setFont(font);
+                    form.getTextField('conforme_name').setText(nameOfPayees + " / " + taxpayerId).setFont(font);
                 }
 
                 if (payeesZipcode != 0)
-                    form.getTextField('payer_zipcode').setText(payeesZipcode);
-                form.getTextField('payer_reg_address').setText(payeesAddress);
+                    form.getTextField('payer_zipcode').setText(payeesZipcode).setFont(font);
+                form.getTextField('payer_reg_address').setText(payeesAddress).setFont(font);
 
                 // Find ATC description
                 const selectedAtc = atcOptions.find(atc => atc.atc_code === atcCode);
                 if (selectedAtc) {
-                    form.getTextField('IPS1').setText(selectedAtc.atc_description);
+                    form.getTextField('IPS1').setText(selectedAtc.atc_description).setFont(font);
                 }
 
                 // Fill VAT fields
-                form.getTextField('MPS1').setText(vatNonVatDesc);
-                form.getTextField('MPS_ATC1').setText(vatNonVat);
+                form.getTextField('MPS1').setText(vatNonVatDesc).setFont(font);
+                form.getTextField('MPS_ATC1').setText(vatNonVat).setFont(font);
 
-                // Determine which month fields to fill
-                let monthField, mpsMonthField, totalMonthField, totalTaxField;
+                // Continue setting font for other fields similarly...
 
-                if (selectedMonth === "January" || selectedMonth === "April" || selectedMonth === "July" || selectedMonth === "October") {
-                    monthField = 'first_month_1';
-                    mpsMonthField = 'MPS_first_month_1';
-                    totalMonthField = 'TOTAL_first_month';
-                    totalMpsMonthField = 'MPS_first_month';
-                } else if (selectedMonth === "February" || selectedMonth === "May" || selectedMonth === "August" || selectedMonth === "November") {
-                    monthField = 'second_month_1';
-                    mpsMonthField = 'MPS_second_month_1';
-                    totalMonthField = 'TOTAL_second_month';
-                    totalMpsMonthField = 'TOTAL_MPS_second_month';
-                } else if (selectedMonth === "March" || selectedMonth === "June" || selectedMonth === "September" || selectedMonth === "December") {
-                    monthField = 'third_month_1';
-                    mpsMonthField = 'MPS_third_month_1';
-                    totalMonthField = 'TOTAL_third_month';
-                    totalMpsMonthField = 'MPS_third_month';
-                }
-
-                // Calculate upper section values
-                let netPayUpper = 0;
-                let taxUpper = 0;
-
-                // Upper section calculation based on VAT type and ATC code
-                if (vatNonVatPrefix === 'WV') {
-                    netPayUpper = baseAmount / 1.12;
-
-                    if (['WC120', 'WI120', 'WC157', 'WI157'].includes(atcCode)) {
-                        taxUpper = netPayUpper * 0.02;
-                    } else if (['WC640', 'WI640'].includes(atcCode)) {
-                        taxUpper = netPayUpper * 0.01;
-                    } else if (atcCode === 'WI010') {
-                        taxUpper = netPayUpper * 0.05;
-                    } else if (atcCode === 'WIO11') {
-                        taxUpper = netPayUpper * 0.10;
-                    }
-
-                    form.getTextField(monthField).setText(netPayUpper.toLocaleString('en-US', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    }));
-
-                } else if (vatNonVatPrefix === 'WB') {
-                    netPayUpper = baseAmount;
-
-                    if (['WC120', 'WI120', 'WC157', 'WI157'].includes(atcCode)) {
-                        taxUpper = netPayUpper * 0.02;
-                    } else if (['WC640', 'WI640'].includes(atcCode)) {
-                        taxUpper = netPayUpper * 0.01;
-                    } else if (atcCode === 'WI010') {
-                        taxUpper = netPayUpper * 0.05;
-                    } else if (atcCode === 'WIO11') {
-                        taxUpper = netPayUpper * 0.10;
-                    }
-
-                    form.getTextField(monthField).setText(netPayUpper.toLocaleString('en-US', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    }));
-
-                }
-
-                // Set upper section totals
-
+                // For other fields like netPayUpper, taxUpper, etc., you can do the same
                 form.getTextField('total1').setText(netPayUpper.toLocaleString('en-US', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
-                }));
+                })).setFont(font);
                 form.getTextField('tax1').setText(taxUpper.toLocaleString('en-US', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
-                }));
+                })).setFont(font);
                 form.getTextField(totalMonthField).setText(netPayUpper.toLocaleString('en-US', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
-                }));
+                })).setFont(font);
 
-                form.getTextField('TOTAL_total').setText(netPayUpper.toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }));
-
-                form.getTextField('TOTAL_tax').setText(taxUpper.toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }));
-
-                // Lower section calculation
-                let netPayLower = 0;
-                let taxLower = 0;
-
-                if (vatNonVatPrefix === 'WV') {
-                    netPayLower = baseAmount / 1.12;
-                    taxLower = netPayLower * 0.05;
-                } else if (vatNonVatPrefix === 'WB') {
-                    netPayLower = baseAmount;
-                    taxLower = netPayLower * 0.03;
-                }
-
-                // Set lower section values
+                // Lower section calculations
                 form.getTextField(monthField).setText(netPayUpper.toLocaleString('en-US', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
-                }));
+                })).setFont(font);
                 form.getTextField(mpsMonthField).setText(netPayLower.toLocaleString('en-US', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
-                }));
+                })).setFont(font);
                 form.getTextField('MPS_total1').setText(netPayLower.toLocaleString('en-US', {
                     minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                }));
+                    maximumFractionDigits: 2
+                })).setFont(font);
                 form.getTextField('MPS_tax1').setText(taxLower.toLocaleString('en-US', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
-                }));
-                form.getTextField(totalMpsMonthField).setText(netPayLower.toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }));
-                form.getTextField('TOTAL_MPS_total').setText(netPayLower.toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }));
-                form.getTextField('MPS_tax').setText(taxLower.toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }));
+                })).setFont(font);
 
-                // Save and download PDF
+                // Save or download the PDF file
                 const pdfBytes = await pdfDoc.save();
-                const blob = new Blob([pdfBytes], {
-                    type: 'application/pdf'
-                });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                const tin = $('#taxpayer_id').val(); // Get taxpayer_id
-                link.download = `${taxpayerId} - BIR FORM 2307 EXPORTED.pdf`;
-                link.click();
+                // Code to trigger download or further processing of the generated PDF...
 
-                $('#exportModal').modal('hide');
-            } catch (error) {
-                console.error('Error generating PDF:', error);
-                alert('Failed to generate PDF. Please check the file path and try again.');
+            } catch (err) {
+                console.error("Error generating PDF:", err);
             }
         }
+
+
+        //         // Save and download PDF
+        //         const pdfBytes = await pdfDoc.save();
+        //         const blob = new Blob([pdfBytes], {
+        //             type: 'application/pdf'
+        //         });
+        //         const link = document.createElement('a');
+        //         link.href = URL.createObjectURL(blob);
+        //         const tin = $('#taxpayer_id').val(); // Get taxpayer_id
+        //         link.download = `${taxpayerId} - BIR FORM 2307 EXPORTED.pdf`;
+        //         link.click();
+
+        //         $('#exportModal').modal('hide');
+        //     } catch (error) {
+        //         console.error('Error generating PDF:', error);
+        //         alert('Failed to generate PDF. Please check the file path and try again.');
+        //     }
+        // }
     </script>
 </body>
 

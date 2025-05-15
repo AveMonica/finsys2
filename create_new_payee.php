@@ -5,7 +5,7 @@ include 'dbcon.php';
 $atc_codes = [];
 $atc_result = $conn->query("SELECT atc_code FROM atc"); // Replace 'atc_codes_table' with your actual table name
 if ($atc_result->num_rows > 0) {
-    while($row = $atc_result->fetch_assoc()) {
+    while ($row = $atc_result->fetch_assoc()) {
         $atc_codes[] = $row['atc_code'];
     }
 }
@@ -14,7 +14,7 @@ if ($atc_result->num_rows > 0) {
 $vat_nonvat_options = [];
 $vat_result = $conn->query("SELECT vat_nonvat FROM vat_nonvat_table"); // Replace 'vat_nonvat_table' with your actual table name
 if ($vat_result->num_rows > 0) {
-    while($row = $vat_result->fetch_assoc()) {
+    while ($row = $vat_result->fetch_assoc()) {
         $vat_nonvat_options[] = $row['vat_nonvat'];
     }
 }
@@ -24,6 +24,7 @@ $conn->close();
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -47,13 +48,13 @@ $conn->close();
             --dark-green: #1b5e20;
             --accent-green: #4caf50;
         }
-        
+
         .card {
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             border: none;
         }
-        
+
         .card-header {
             background-color: var(--primary-green);
             color: white;
@@ -61,34 +62,34 @@ $conn->close();
             padding: 15px 20px;
             width: 730px;
         }
-        
+
         .card-header h1 {
             font-size: 1.8rem;
             margin: 0;
             font-weight: 600;
         }
-        
+
         .card-body {
             padding: 25px;
         }
-        
+
         .form-group label {
             font-weight: 500;
             color: var(--dark-green);
             margin-bottom: 5px;
         }
-        
+
         .form-control {
             border-radius: 4px;
             border: 1px solid #ced4da;
             padding: 10px 15px;
         }
-        
+
         .form-control:focus {
             border-color: var(--light-green);
             box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
         }
-        
+
         .btn-primary {
             background-color: var(--accent-green);
             border-color: var(--accent-green);
@@ -97,13 +98,13 @@ $conn->close();
             font-weight: 500;
             transition: all 0.2s ease;
         }
-        
+
         .btn-primary:hover {
             background-color: var(--dark-green);
             border-color: var(--dark-green);
             transform: translateY(-1px);
         }
-        
+
         .btn-secondary {
             background-color: #6c757d;
             border-color: #6c757d;
@@ -112,13 +113,13 @@ $conn->close();
             font-weight: 500;
             transition: all 0.2s ease;
         }
-        
+
         .btn-secondary:hover {
             background-color: #5a6268;
             border-color: #545b62;
             transform: translateY(-1px);
         }
-        
+
         .section-title {
             color: var(--dark-green);
             font-weight: 600;
@@ -126,19 +127,20 @@ $conn->close();
             padding-bottom: 8px;
             border-bottom: 2px solid var(--light-green);
         }
-        
+
         .form-check-input:checked {
             background-color: var(--accent-green);
             border-color: var(--accent-green);
         }
     </style>
 </head>
+
 <body>
     <div class="dashboard-container">
         <div class="sidebar">
             <div class="sidebar-header">
                 <img src="assets/img/2020-nia-logo.svg" width="45px" alt="Nia Logo 2020">
-                <span>Dashboard</span>
+                <span>FinanceSystem</span>
             </div>
             <ul class="sidebar-nav">
                 <li><a href="dashboard.php"><i class="bi bi-wallet"></i> Funds</a></li>
@@ -170,7 +172,7 @@ $conn->close();
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
@@ -185,7 +187,7 @@ $conn->close();
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="row">
                                 <div class="col-md-8">
                                     <div class="form-group">
@@ -200,7 +202,7 @@ $conn->close();
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <h5 class="section-title">PAYMENT INFORMATION</h5>
                             <div class="row">
                                 <div class="col-md-4">
@@ -222,34 +224,34 @@ $conn->close();
                                     </div>
                                 </div>
                             </div>
-                            
-                            
+
+
                             <h5 class="section-title">TAX INFORMATION</h5>
                             <div class="row">
                                 <div class="col-md-6">
-                                <div class="form-group">
-                                <label for="atc_code">ATC Code:</label>
-                                <select class="form-control" id="atc_code" name="atc_code" required>
-                                    <option value="" disabled selected>Select an ATC Code</option>
-                                    <?php foreach($atc_codes as $code): ?>
-                                        <option value="<?php echo $code; ?>"><?php echo $code; ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
+                                    <div class="form-group">
+                                        <label for="atc_code">ATC Code:</label>
+                                        <select class="form-control" id="atc_code" name="atc_code" required>
+                                            <option value="" disabled selected>Select an ATC Code</option>
+                                            <?php foreach ($atc_codes as $code): ?>
+                                                <option value="<?php echo $code; ?>"><?php echo $code; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
-                                <div class="form-group">
-                                <label for="vat_nonvat">VAT/Non-VAT:</label>
-                                <select class="form-control" id="vat_nonvat" name="vat_nonvat" required>
-                                <option value="" disabled selected>Select VAT/Non-VAT</option>
-                                    <?php foreach($vat_nonvat_options as $option): ?>
-                                        <option value="<?php echo $option; ?>"><?php echo $option; ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
+                                    <div class="form-group">
+                                        <label for="vat_nonvat">VAT/Non-VAT:</label>
+                                        <select class="form-control" id="vat_nonvat" name="vat_nonvat" required>
+                                            <option value="" disabled selected>Select VAT/Non-VAT</option>
+                                            <?php foreach ($vat_nonvat_options as $option): ?>
+                                                <option value="<?php echo $option; ?>"><?php echo $option; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
-                            
+
                             <div class="text-center mt-4">
                                 <button type="submit" class="btn btn-primary">Create Payee</button>
                                 <a href="export_bir_pdf.php" class="btn btn-secondary ml-3">Cancel</a>
@@ -264,7 +266,7 @@ $conn->close();
     <script>
         // Pass PHP data to JavaScript
         const payorOptions = <?php echo json_encode($payorOptions); ?>;
-        
+
         $(document).ready(function() {
             // Handle payor selection
             $('#payor_tin').on('change', function() {
@@ -280,7 +282,7 @@ $conn->close();
                     $('#payor_zipcode').val('');
                 }
             });
-            
+
             // Calculate tax withheld when amount or rate changes
             $('#amount_of_income_payment, #rate_of_tax').on('input', function() {
                 const amount = parseFloat($('#amount_of_income_payment').val()) || 0;
@@ -291,4 +293,5 @@ $conn->close();
         });
     </script>
 </body>
+
 </html>
